@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moto Location</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Carrega a API do Google Maps primeiro -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Moto Location</h1>
+        
+        <!-- Mapa movido para cima -->
+        <div id="map" class="map-container"></div>
+
+        <div class="form-container">
+            <h2>Cadastre-se</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="name">Seu Nome:</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="motoBrand">Marca da Moto:</label>
+                    <input type="text" id="motoBrand" required>
+                </div>
+                <button type="submit">Compartilhar Localização</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Carrega nossos scripts depois -->
+    <script src="js/map-init.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        // Inicializa o mapa quando a página carregar
+        window.onload = function() {
+            initMap();
+        };
+    </script>
+</body>
+</html> 
