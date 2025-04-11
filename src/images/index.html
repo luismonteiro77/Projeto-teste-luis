@@ -1,44 +1,61 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moto Location</title>
+    <title>Compartilhamento de Localização</title>
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Carrega a API do Google Maps primeiro -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Definição da função initMap -->
+    <script>
+        function initMap() {
+            // A implementação real está no app.js
+            // Esta é apenas uma função placeholder para o callback do Google Maps
+            console.log('initMap placeholder called');
+        }
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Moto Location</h1>
-        
-        <!-- Mapa movido para cima -->
-        <div id="map" class="map-container"></div>
+    <header>
+        <h1><i class="fas fa-motorcycle"></i> Compartilhamento de Localização</h1>
+    </header>
 
+    <main>
         <div class="form-container">
-            <h2>Cadastre-se</h2>
-            <form id="userForm">
-                <div class="form-group">
-                    <label for="name">Seu Nome:</label>
-                    <input type="text" id="name" required>
+            <div class="form-fields">
+                <div class="input-group">
+                    <label for="nameInput">Seu Nome:</label>
+                    <input type="text" id="nameInput" placeholder="Digite seu nome">
                 </div>
-                <div class="form-group">
-                    <label for="motoBrand">Marca da Moto:</label>
-                    <input type="text" id="motoBrand" required>
-                </div>
-                <button type="submit">Compartilhar Localização</button>
-            </form>
-        </div>
-    </div>
 
-    <!-- Carrega nossos scripts depois -->
-    <script src="js/map-init.js"></script>
-    <script src="js/script.js"></script>
-    <script>
-        // Inicializa o mapa quando a página carregar
-        window.onload = function() {
-            initMap();
-        };
-    </script>
+                <div class="input-group">
+                    <label for="modelInput">Modelo da Moto:</label>
+                    <input type="text" id="modelInput" placeholder="Digite o modelo da sua moto">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="startBtn" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Iniciar
+                </button>
+                <button id="stopBtn" class="btn btn-danger" style="display: none;">
+                    <i class="fas fa-stop"></i> Parar
+                </button>
+            </div>
+        </div>
+
+        <div id="map" class="map-container"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Compartilhamento de Localização. Todos os direitos reservados.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/app.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAM8eMB9duJK02sswv52Oy30m1yNipm85g&callback=initMap" async defer></script>
 </body>
 </html> 
