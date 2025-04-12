@@ -64,7 +64,7 @@ main {
     padding: 0;
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
-    margin-bottom: 2rem;
+    margin-bottom: 4rem;
     border: 2px solid rgba(255, 107, 0, 0.6);
     position: relative;
     overflow: hidden;
@@ -234,6 +234,7 @@ main {
 
 /* Map container */
 .map-container {
+    margin-top: 0;
     height: 400px;
     min-height: 400px;
     width: 100%;
@@ -241,6 +242,7 @@ main {
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
     border: 3px solid var(--ktm-orange);
+    position: relative;
 }
 
 /* Footer */
@@ -264,7 +266,7 @@ footer {
     }
 
     .form-container {
-        min-height: 350px;
+        margin-bottom: 3.5rem;
     }
 
     .form-fields {
@@ -279,6 +281,16 @@ footer {
     .map-container {
         height: 300px;
     }
+
+    .center-map-btn {
+        margin: -2rem 0 1.5rem 15px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .center-map-btn i {
+        font-size: 20px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -287,7 +299,7 @@ footer {
     }
 
     .form-container {
-        min-height: 300px;
+        margin-bottom: 3rem;
     }
 
     .form-fields {
@@ -302,4 +314,43 @@ footer {
     .map-container {
         height: 250px;
     }
+
+    .center-map-btn {
+        margin: -1.5rem 0 1rem 10px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .center-map-btn i {
+        font-size: 18px;
+    }
+}
+
+/* Center map button */
+.center-map-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -2.5rem 0 2rem 20px;
+    background-color: var(--ktm-black);
+    color: var(--ktm-orange);
+    border: 2px solid var(--ktm-orange);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.center-map-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+    background-color: var(--ktm-dark);
+}
+
+.center-map-btn i {
+    font-size: 24px;
 } 

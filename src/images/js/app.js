@@ -3,32 +3,50 @@ let nameInput;
 let modelInput;
 let startBtn;
 let stopBtn;
+let centerMapBtn;
 let mapContainer;
 let map;
 let marker;
 let watchId;
 let isTracking = false;
+let currentPosition = null;
 
 // Objeto para armazenar marcadores de outros usuários
 const userMarkers = new Map();
 
-// Dados simulados de outros usuários (para teste)
-const mockUsers = [
-    { id: 'user1', name: 'João', model: 'Honda CB 500', lat: -23.550520, lng: -46.633308 },
-    { id: 'user2', name: 'Maria', model: 'Yamaha MT-07', lat: -23.555994, lng: -46.639825 },
-    { id: 'user3', name: 'Pedro', model: 'Kawasaki Z400', lat: -23.548091, lng: -46.638738 }
-];
-
-// Sobrescreve a função initMap do placeholder
+// Inicialização do mapa
 window.initMap = function() {
-    // Coordenadas iniciais (centro do Brasil)
-    const initialPosition = { lat: -15.7801, lng: -47.9292 };
-
+    // Elementos do DOM
+    nameInput = document.getElementById('nameInput');
+    modelInput = document.getElementById('modelInput');
+    startBtn = document.getElementById('startBtn');
+    stopBtn = document.getElementById('stopBtn');
+    centerMapBtn = document.getElementById('centerMapBtn');
     mapContainer = document.getElementById('map');
+
+    // Configurar estado inicial dos botões
+    startBtn.style.display = 'block';
+    stopBtn.style.display = 'none';
+    centerMapBtn.style.display = 'none';
+
+    // Adicionar event listeners aos botões
+    startBtn.addEventListener('click', startSharing);
+    stopBtn.addEventListener('click', stopSharing);
+    centerMapBtn.addEventListener('click', centerMap);
+
+    // Carregar dados salvos
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData) {
+        nameInput.value = userData.name;
+        modelInput.value = userData.model;
+    }
+
+    // Coordenadas iniciais (Portugal continental)
+    const initialPosition = { lat: 39.5, lng: -8.0 };
     
     // Criação do mapa
     map = new google.maps.Map(mapContainer, {
-        zoom: 5,
+        zoom: 7,
         center: initialPosition,
         styles: [
             {
@@ -37,17 +55,6 @@ window.initMap = function() {
                 stylers: [{ visibility: 'off' }]
             }
         ]
-    });
-
-    // Criação do marcador inicial
-    marker = new google.maps.Marker({
-        position: initialPosition,
-        map: map,
-        title: 'Sua localização',
-        icon: {
-            url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-            scaledSize: new google.maps.Size(32, 32)
-        }
     });
 
     // Adiciona legenda ao mapa
@@ -78,18 +85,24 @@ window.initMap = function() {
     `;
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legendDiv);
 
-    // Adiciona marcadores de outros usuários
-    addMockUsers();
+    // Tenta obter a localização inicial
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                map.setCenter(pos);
+                map.setZoom(12);
+            },
+            (error) => {
+                console.warn('Erro ao obter localização:', error);
+            }
+        );
+    }
 
     console.log('Mapa inicializado com sucesso!');
-}
-
-// Função para adicionar usuários simulados
-function addMockUsers() {
-    mockUsers.forEach(user => {
-        const position = { lat: user.lat, lng: user.lng };
-        addUserMarker(user.id, user.name, user.model, position);
-    });
 }
 
 // Função para adicionar marcador de outro usuário
@@ -138,18 +151,7 @@ function addUserMarker(userId, userName, userModel, position) {
         }
     });
 
-    // Adiciona animação ao passar o mouse
-    marker.addListener('mouseover', () => {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-    });
-
-    marker.addListener('mouseout', () => {
-        marker.setAnimation(null);
-    });
-
-    // Abre a janela de informações ao clicar
     marker.addListener('click', () => {
-        // Fecha todas as outras janelas de informação
         userMarkers.forEach((value) => {
             value.infowindow.close();
         });
@@ -159,20 +161,11 @@ function addUserMarker(userId, userName, userModel, position) {
     userMarkers.set(userId, { marker, infowindow });
 }
 
-// Função para atualizar posição de um usuário
-function updateUserPosition(userId, position) {
-    const userMarker = userMarkers.get(userId);
-    if (userMarker) {
-        userMarker.marker.setPosition(position);
-    }
-}
-
-// Função para remover marcador de um usuário
-function removeUserMarker(userId) {
-    const userMarker = userMarkers.get(userId);
-    if (userMarker) {
-        userMarker.marker.setMap(null);
-        userMarkers.delete(userId);
+// Função para centralizar o mapa
+function centerMap() {
+    if (currentPosition) {
+        map.panTo(currentPosition);
+        map.setZoom(15);
     }
 }
 
@@ -188,129 +181,81 @@ function startSharing() {
         return;
     }
 
-    isTracking = true;
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
-    stopBtn.style.display = 'block';
-    
-    // Atualizar status visual
-    startBtn.classList.add('disabled');
-    stopBtn.classList.remove('disabled');
-
-    // Opções de geolocalização
-    const options = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-    };
-
-    watchId = navigator.geolocation.watchPosition(
-        updatePosition,
-        handleError,
-        options
-    );
-
     // Salvar dados do usuário
     localStorage.setItem('userData', JSON.stringify({
         name: nameInput.value,
         model: modelInput.value
     }));
 
-    // Simular movimento dos outros usuários
-    startMockUsersMovement();
-}
+    isTracking = true;
+    startBtn.style.display = 'none';
+    stopBtn.style.display = 'block';
+    stopBtn.disabled = false;
 
-// Função para atualizar a posição
-function updatePosition(position) {
-    const { latitude, longitude } = position.coords;
-    const newPosition = { lat: latitude, lng: longitude };
-
-    // Atualiza o marcador e centraliza o mapa
-    marker.setPosition(newPosition);
-    map.panTo(newPosition);
-    
-    if (map.getZoom() < 15) {
-        map.setZoom(15);
-    }
-}
-
-// Função para simular movimento dos outros usuários
-function startMockUsersMovement() {
-    mockUsers.forEach(user => {
-        setInterval(() => {
-            if (isTracking) {
-                // Simula pequenas mudanças na posição
-                const newLat = user.lat + (Math.random() - 0.5) * 0.001;
-                const newLng = user.lng + (Math.random() - 0.5) * 0.001;
-                updateUserPosition(user.id, { lat: newLat, lng: newLng });
+    // Criar marcador se ainda não existe
+    if (!marker) {
+        marker = new google.maps.Marker({
+            map: map,
+            title: 'Sua localização',
+            icon: {
+                url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+                scaledSize: new google.maps.Size(32, 32)
             }
-        }, 3000);
-    });
+        });
+    }
+
+    // Mostrar botão de centralizar
+    centerMapBtn.style.display = 'flex';
+
+    // Iniciar rastreamento
+    watchId = navigator.geolocation.watchPosition(
+        (position) => {
+            const pos = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+
+            currentPosition = pos; // Atualizar posição atual
+            marker.setPosition(pos);
+            map.panTo(pos);
+
+            console.log('Localização atualizada:', pos);
+        },
+        (error) => {
+            console.error('Erro ao obter localização:', error);
+            stopSharing();
+            alert('Erro ao obter sua localização. Por favor, verifique as permissões do navegador.');
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        }
+    );
 }
 
 // Função para parar o compartilhamento
 function stopSharing() {
+    console.log('Parando compartilhamento...');
+    
     if (watchId) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
     }
 
     isTracking = false;
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
+    startBtn.style.display = 'block';
     stopBtn.style.display = 'none';
+    centerMapBtn.style.display = 'none'; // Esconder botão de centralizar
+    currentPosition = null;
 
-    // Atualizar status visual
-    startBtn.classList.remove('disabled');
-    stopBtn.classList.add('disabled');
-}
-
-// Função para lidar com erros de geolocalização
-function handleError(error) {
-    let message = '';
-    
-    switch(error.code) {
-        case error.PERMISSION_DENIED:
-            message = 'Permissão para geolocalização negada.';
-            break;
-        case error.POSITION_UNAVAILABLE:
-            message = 'Localização indisponível.';
-            break;
-        case error.TIMEOUT:
-            message = 'Tempo esgotado ao obter localização.';
-            break;
-        default:
-            message = 'Erro desconhecido ao obter localização.';
+    if (marker) {
+        marker.setMap(null);
+        marker = null;
     }
 
-    alert(message);
-    stopSharing();
+    console.log('Compartilhamento parado com sucesso!');
 }
-
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar elementos do DOM
-    nameInput = document.getElementById('nameInput');
-    modelInput = document.getElementById('modelInput');
-    startBtn = document.getElementById('startBtn');
-    stopBtn = document.getElementById('stopBtn');
-
-    // Carregar dados salvos
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    if (userData) {
-        nameInput.value = userData.name;
-        modelInput.value = userData.model;
-    }
-
-    // Adicionar listeners aos botões
-    startBtn.addEventListener('click', startSharing);
-    stopBtn.addEventListener('click', stopSharing);
-
-    // Configurar estado inicial dos botões
-    stopBtn.disabled = true;
-    stopBtn.style.display = 'none';
-    stopBtn.classList.add('disabled');
-});
 
 // Limpar rastreamento ao fechar/recarregar a página
 window.addEventListener('beforeunload', () => {
